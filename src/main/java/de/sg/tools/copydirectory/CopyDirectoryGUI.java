@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,6 +21,10 @@ public class CopyDirectoryGUI {
     private final JTextField tfVezeichnisFrom = new JTextField(70);
 
     private final JTextField tfVerzeichnisTo = new JTextField(70);
+
+    private final JCheckBox cbDissolveSubfolder = new JCheckBox();
+
+    private final JCheckBox cbDeleteOnSuccess = new JCheckBox();
 
     private JFrame frame;
 
@@ -36,9 +41,15 @@ public class CopyDirectoryGUI {
         frame.add(new JLabel(LABEL_ZIELVERZEICHNIS));
         frame.add(tfVerzeichnisTo);
 
-        final JButton btnAuffrischen = new JButton("Kopieren");
-        btnAuffrischen.addActionListener(actionlistenerBtnKopieren());
-        frame.add(btnAuffrischen);
+        frame.add(new JLabel("Unterverzeichnisse auflösen"));
+        frame.add(cbDissolveSubfolder);
+
+        frame.add(new JLabel("Quellverzeichnisse/-dateien bei Erfolg löschen"));
+        frame.add(cbDeleteOnSuccess);
+
+        final JButton btnOk = new JButton("OK");
+        btnOk.addActionListener(actionlistenerBtnKopieren());
+        frame.add(btnOk);
 
         frame.setVisible(true);
         return frame;
@@ -50,8 +61,9 @@ public class CopyDirectoryGUI {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 if (validate()) {
-                    final String message = CopyDirectoryUtils.copy(tfVezeichnisFrom.getText(),
-                            tfVerzeichnisTo.getText());
+                    final String message = CopyDirectoryUtils
+                            .copy(tfVezeichnisFrom.getText(), tfVerzeichnisTo.getText(),
+                                    cbDissolveSubfolder.isSelected(), cbDeleteOnSuccess.isSelected());
                     JOptionPane.showMessageDialog(frame, message);
                 }
             }
