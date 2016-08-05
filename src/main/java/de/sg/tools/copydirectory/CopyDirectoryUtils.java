@@ -7,15 +7,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Sita Geßner
  */
+@Slf4j
 public final class CopyDirectoryUtils {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CopyDirectoryUtils.class);
 
     private static int countDirectory;
 
@@ -37,7 +35,7 @@ public final class CopyDirectoryUtils {
         initCounter();
         final File source = new File(directoryFrom);
         final File target = new File(directoryTo);
-        LOGGER.info("Starte Kopiervorgang");
+        log.info("Starte Kopiervorgang");
 
         if (dissolveSubfolder) {
             copyDirectoryDissolveSubfolder(source, target, deleteOnSuccess);
@@ -45,13 +43,13 @@ public final class CopyDirectoryUtils {
             copyDirectory(source, target, deleteOnSuccess);
         }
 
-        LOGGER.info(getSuccessMessage());
+        log.info(getSuccessMessage());
         return getSuccessMessageDisplay();
     }
 
     private static void copyDirectory(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess) {
         if (directoryTo.mkdir()) {
-            LOGGER.info("Verzeichnis angelegt: {}", directoryTo);
+            log.info("Verzeichnis angelegt: {}", directoryTo);
             countDirectory++;
         }
 
@@ -72,17 +70,16 @@ public final class CopyDirectoryUtils {
             final String sizeTo = byteCountToDisplaySize(directoryTo.length());
 
             if (directoryTo.exists() && sizeFrom.equals(sizeTo)) {
-                LOGGER.info("Kopiervorgang von Datei {} (Dateigröße: {}) erfolgreich", directoryFrom, sizeFrom);
+                log.info("Kopiervorgang von Datei {} (Dateigröße: {}) erfolgreich", directoryFrom, sizeFrom);
                 countFileSuccess++;
                 deleteFile(directoryFrom, deleteOnSuccess);
             }
             if (!sizeFrom.equals(sizeTo)) {
-                LOGGER.warn("Dateigrößen abweichend! Quelle: {}  Ziel: {}", sizeFrom, sizeTo);
+                log.warn("Dateigrößen abweichend! Quelle: {}  Ziel: {}", sizeFrom, sizeTo);
                 countWarnings++;
             }
         } catch (final IOException e) {
-            LOGGER.error("Kopieren von  '{}' nach '{}' ist fehlgeschlagen : {} {}", directoryFrom, directoryTo,
-                    e.getMessage(), e);
+            log.error("Kopieren von  '{}' nach '{}' ist fehlgeschlagen : {} {}", directoryFrom, directoryTo, e.getMessage(), e);
             countFileFail++;
         }
     }
@@ -93,8 +90,7 @@ public final class CopyDirectoryUtils {
                 Files.deleteIfExists(directoryFrom.toPath());
                 countDeletedFiles++;
             } catch (final Exception e) {
-                LOGGER.warn("Datei {} konnte nicht gelöscht werden: {} {}", directoryFrom.getAbsolutePath(),
-                        e.getMessage(), e);
+                log.warn("Datei {} konnte nicht gelöscht werden: {} {}", directoryFrom.getAbsolutePath(), e.getMessage(), e);
             }
         }
     }
@@ -106,16 +102,13 @@ public final class CopyDirectoryUtils {
         }
     }
 
-    private static void copyDirectoryDissolveSubfolder(final File directoryFrom, final File directoryTo,
-            final boolean deleteOnSuccess) {
+    private static void copyDirectoryDissolveSubfolder(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess) {
         for (final File file : directoryFrom.listFiles()) {
             if (file.isDirectory()) {
                 copyDirectoryDissolveSubfolder(file, directoryTo, deleteOnSuccess);
                 deleteDirectory(deleteOnSuccess, file);
             } else {
-                copyFile(
-                        file,
-                        new File(directoryTo.getAbsolutePath() + System.getProperty("file.separator") + file.getName()),
+                copyFile(file, new File(directoryTo.getAbsolutePath() + System.getProperty("file.separator") + file.getName()),
                         deleteOnSuccess);
             }
         }
