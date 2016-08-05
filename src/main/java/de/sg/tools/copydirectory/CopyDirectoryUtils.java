@@ -1,6 +1,6 @@
 package de.sg.tools.copydirectory;
 
-import static de.sg.tools.copydirectory.HumanReadableFilesizeUtils.byteCountToDisplaySize;
+import static de.sg.tools.copydirectory.FilesizeUtils.byteCountToDisplaySize;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +29,9 @@ public final class CopyDirectoryUtils {
 
     private static int countDeletedFiles;
 
+    private CopyDirectoryUtils() {
+    }
+
     public static String copy(final String directoryFrom, final String directoryTo, final boolean dissolveSubfolder,
             final boolean deleteOnSuccess) {
         initCounter();
@@ -47,22 +50,17 @@ public final class CopyDirectoryUtils {
     }
 
     private static void copyDirectory(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess) {
-        final File[] files = directoryFrom.listFiles();
         if (directoryTo.mkdir()) {
             LOGGER.info("Verzeichnis angelegt: {}", directoryTo);
             countDirectory++;
         }
 
-        for (final File file : files) {
+        for (final File file : directoryFrom.listFiles()) {
             if (file.isDirectory()) {
-                copyDirectory(file, new File(directoryTo.getAbsolutePath() + System.getProperty("file.separator")
-                        + file.getName()), deleteOnSuccess);
+                copyDirectory(file, new File(directoryTo.getAbsolutePath(), file.getName()), deleteOnSuccess);
                 deleteDirectory(deleteOnSuccess, file);
             } else {
-                copyFile(
-                        file,
-                        new File(directoryTo.getAbsolutePath() + System.getProperty("file.separator") + file.getName()),
-                        deleteOnSuccess);
+                copyFile(file, new File(directoryTo.getAbsolutePath(), file.getName()), deleteOnSuccess);
             }
         }
     }
