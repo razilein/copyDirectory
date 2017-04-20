@@ -3,7 +3,6 @@ package de.sg.tools.copydirectory;
 import static de.sg.tools.copydirectory.FilesizeUtils.byteCountToDisplaySize;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -31,23 +30,24 @@ public final class CopyDirectoryUtils {
     }
 
     public static String copy(final String directoryFrom, final String directoryTo, final boolean dissolveSubfolder,
-            final boolean deleteOnSuccess) {
+            final boolean deleteOnSuccess, final boolean ignoreCorruptFiles) {
         initCounter();
         final File source = new File(directoryFrom);
         final File target = new File(directoryTo);
         log.info("Starte Kopiervorgang");
 
         if (dissolveSubfolder) {
-            copyDirectoryDissolveSubfolder(source, target, deleteOnSuccess);
+            copyDirectoryDissolveSubfolder(source, target, deleteOnSuccess, ignoreCorruptFiles);
         } else {
-            copyDirectory(source, target, deleteOnSuccess);
+            copyDirectory(source, target, deleteOnSuccess, ignoreCorruptFiles);
         }
 
         log.info(getSuccessMessage());
         return getSuccessMessageDisplay();
     }
 
-    private static void copyDirectory(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess) {
+    private static void copyDirectory(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess,
+            final boolean ignoreCorruptFiles) {
         if (directoryTo.mkdir()) {
             log.info("Verzeichnis angelegt: {}", directoryTo);
             countDirectory++;
@@ -55,15 +55,16 @@ public final class CopyDirectoryUtils {
 
         for (final File file : directoryFrom.listFiles()) {
             if (file.isDirectory()) {
-                copyDirectory(file, new File(directoryTo.getAbsolutePath(), file.getName()), deleteOnSuccess);
+                copyDirectory(file, new File(directoryTo.getAbsolutePath(), file.getName()), deleteOnSuccess, ignoreCorruptFiles);
                 deleteDirectory(deleteOnSuccess, file);
             } else {
-                copyFile(file, new File(directoryTo.getAbsolutePath(), file.getName()), deleteOnSuccess);
+                copyFile(file, new File(directoryTo.getAbsolutePath(), file.getName()), deleteOnSuccess, ignoreCorruptFiles);
             }
         }
     }
 
-    private static void copyFile(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess) {
+    private static void copyFile(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess,
+            final boolean ignoreCorruptFiles) {
         try {
             Files.copy(directoryFrom.toPath(), directoryTo.toPath(), StandardCopyOption.REPLACE_EXISTING);
             final String sizeFrom = byteCountToDisplaySize(directoryFrom.length());
@@ -77,8 +78,9 @@ public final class CopyDirectoryUtils {
             if (!sizeFrom.equals(sizeTo)) {
                 log.warn("Dateigrößen abweichend! Quelle: {}  Ziel: {}", sizeFrom, sizeTo);
                 countWarnings++;
+                deleteCorrputFile(directoryTo, ignoreCorruptFiles);
             }
-        } catch (final IOException e) {
+        } catch (final Exception e) {
             log.error("Kopieren von  '{}' nach '{}' ist fehlgeschlagen : {} {}", directoryFrom, directoryTo, e.getMessage(), e);
             countFileFail++;
         }
@@ -95,6 +97,16 @@ public final class CopyDirectoryUtils {
         }
     }
 
+    private static void deleteCorrputFile(final File directoryTo, final boolean ignoreCorruptFiles) {
+        if (ignoreCorruptFiles) {
+            try {
+                Files.deleteIfExists(directoryTo.toPath());
+            } catch (final Exception e) {
+                log.warn("Datei {} konnte nicht gelöscht werden: {} {}", directoryTo.getAbsolutePath(), e.getMessage(), e);
+            }
+        }
+    }
+
     private static void deleteDirectory(final boolean deleteOnSuccess, final File file) {
         if (deleteOnSuccess && file.listFiles().length == 0) {
             file.delete();
@@ -102,14 +114,15 @@ public final class CopyDirectoryUtils {
         }
     }
 
-    private static void copyDirectoryDissolveSubfolder(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess) {
+    private static void copyDirectoryDissolveSubfolder(final File directoryFrom, final File directoryTo, final boolean deleteOnSuccess,
+            final boolean ignoreCorruptFiles) {
         for (final File file : directoryFrom.listFiles()) {
             if (file.isDirectory()) {
-                copyDirectoryDissolveSubfolder(file, directoryTo, deleteOnSuccess);
+                copyDirectoryDissolveSubfolder(file, directoryTo, deleteOnSuccess, ignoreCorruptFiles);
                 deleteDirectory(deleteOnSuccess, file);
             } else {
                 copyFile(file, new File(directoryTo.getAbsolutePath() + System.getProperty("file.separator") + file.getName()),
-                        deleteOnSuccess);
+                        deleteOnSuccess, ignoreCorruptFiles);
             }
         }
     }
