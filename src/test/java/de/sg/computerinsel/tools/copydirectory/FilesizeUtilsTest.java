@@ -1,10 +1,12 @@
-package de.sg.tools.copydirectory;
+package de.sg.computerinsel.tools.copydirectory;
 
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 
 import org.junit.Test;
+
+import de.sg.computerinsel.tools.copydirectory.FilesizeUtils;
 
 /**
  * @author Sita Geßner

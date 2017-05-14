@@ -1,4 +1,4 @@
-package de.sg.tools.copydirectory;
+package de.sg.computerinsel.tools.copydirectory;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;

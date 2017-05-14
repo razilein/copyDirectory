@@ -1,4 +1,4 @@
-package de.sg.tools.copydirectory;
+package de.sg.computerinsel.tools.copydirectory;
 
 /**
  * @author Sita Geßner
