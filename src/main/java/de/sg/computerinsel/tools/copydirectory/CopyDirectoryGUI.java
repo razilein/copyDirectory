@@ -1,4 +1,4 @@
-package de.sg.tools.copydirectory;
+package de.sg.computerinsel.tools.copydirectory;
 
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -33,7 +34,8 @@ public class CopyDirectoryGUI {
     private JFrame frame;
 
     public JFrame createGUI() {
-        frame = new JFrame("Verzeichnis kopieren © Sita Geßner");
+        frame = new JFrame("CopyFile V1.0.0 © Sita Geßner");
+        frame.setIconImage(new ImageIcon(getClass().getResource("pictures/copy.png")).getImage());
         frame.setResizable(false);
         frame.setLayout(new FlowLayout(FlowLayout.LEFT));
         frame.setSize(800, 230);
@@ -99,6 +101,7 @@ public class CopyDirectoryGUI {
             }
 
             private boolean validate() {
+                createDir(tfVerzeichnisTo.getText());
                 return isValidDirectory(tfVezeichnisFrom.getText(), LABEL_QUELLVERZEICHNIS)
                         && isValidDirectory(tfVerzeichnisTo.getText(), LABEL_ZIELVERZEICHNIS);
             }
@@ -114,6 +117,12 @@ public class CopyDirectoryGUI {
                             + "' existiert nicht oder Sie besitzen nicht die notwendigen Rechte.");
                 }
                 return isValid;
+            }
+
+            private void createDir(final String dir) {
+                if (dir != null) {
+                    new File(dir).mkdir();
+                }
             }
 
         };

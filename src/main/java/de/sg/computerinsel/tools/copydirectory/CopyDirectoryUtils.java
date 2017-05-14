@@ -1,6 +1,6 @@
-package de.sg.tools.copydirectory;
+package de.sg.computerinsel.tools.copydirectory;
 
-import static de.sg.tools.copydirectory.FilesizeUtils.byteCountToDisplaySize;
+import static de.sg.computerinsel.tools.copydirectory.FilesizeUtils.byteCountToDisplaySize;
 
 import java.io.File;
 import java.nio.file.Files;
